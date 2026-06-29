@@ -1,5 +1,4 @@
 "use client";
-
 import { useRef, useState } from "react";
 import Link from "next/link";
 import { motion, useReducedMotion, type Variants } from "framer-motion";
@@ -782,7 +781,7 @@ export default function HomePage() {
                   />
                   <div>
                     <p className="text-sm font-semibold text-white">{t.name}</p>
-                    <p className="text-xs text-white/40">{t.role}</p>
+                    <p className="text-xs text-white/40" style={{ color: "#f59e0b" }}>{t.role}</p>
                   </div>
                 </div>
               </motion.div>
