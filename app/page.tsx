@@ -1,1008 +1,1008 @@
-"use client";
-
-import { useState, useRef } from "react";
-import Link from "next/link";
-import { motion, useReducedMotion, type Variants } from "framer-motion";
-import { ArrowRight, Code2 as Github, Briefcase as Linkedin, MessageCircle as Twitter, Mail, ExternalLink, Code, Sparkles, Layout, Terminal, Star, CheckCircle, Send, User, FileText } from 'lucide-react';
-import {
-  APP_NAME,
-  APP_TAGLINE,
-  APP_DESCRIPTION,
-  CTA_LABEL,
-  CTA_HREF,
-  socialLinks,
-} from "@/lib/data";
-import {
-  fadeInUp,
-  fadeIn,
-  staggerContainer,
-  scaleIn,
-  slideInLeft,
-  slideInRight,
-} from "@/lib/motion";
-
-// ─── Inline Data ────────────────────────────────────────────────────────────
-
-const skills = [
-  {
-    category: "Frontend",
-    icon: "Layout",
-    color: "from-purple-500/20 to-purple-500/5",
-    accent: "text-purple-400",
-    border: "border-purple-500/20",
-    items: ["React", "Next.js", "TypeScript", "Tailwind CSS", "Framer Motion"],
-  },
-  {
-    category: "Backend",
-    icon: "Terminal",
-    color: "from-sky-500/20 to-sky-500/5",
-    accent: "text-sky-400",
-    border: "border-sky-500/20",
-    items: ["Node.js", "Express", "PostgreSQL", "Prisma", "REST & GraphQL"],
-  },
-  {
-    category: "Craft",
-    icon: "Sparkles",
-    color: "from-rose-500/20 to-rose-500/5",
-    accent: "text-rose-400",
-    border: "border-rose-500/20",
-    items: [
-      "UI/UX Design",
-      "Design Systems",
-      "Accessibility",
-      "Performance",
-      "Animation",
-    ],
-  },
-  {
-    category: "Tooling",
-    icon: "Code",
-    color: "from-amber-500/20 to-amber-500/5",
-    accent: "text-amber-400",
-    border: "border-amber-500/20",
-    items: ["Git & GitHub", "Docker", "Vercel", "Figma", "CI/CD Pipelines"],
-  },
-];
-
-const projects = [
-  {
-    title: "Luminary UI",
-    description:
-      "A comprehensive design system and component library built for scale. Ships with 60+ accessible components, dark mode, and a Figma kit.",
-    tags: ["React", "TypeScript", "Storybook", "Radix UI"],
-    image: "https://assets-us-01.kc-usercontent.com/90e79cae-25c6-00b5-6f5b-27efe5c250ab/76b96548-694f-46d7-a2f4-5b6f1b865f2d/UX%20Design.jpg?h=474&fm=webp",
-    href: "https://github.com",
-    live: "https://example.com",
-    featured: true,
-    stat: "60+ components",
-  },
-  {
-    title: "Orbit Analytics",
-    description:
-      "Real-time SaaS analytics dashboard with customizable widgets, cohort analysis, and automated reporting for growth teams.",
-    tags: ["Next.js", "Recharts", "Prisma", "PostgreSQL"],
-    image: "https://media.licdn.com/dms/image/v2/C4D0BAQGpxO-qmVX71w/company-logo_200_200/company-logo_200_200/0/1631343009150?e=2147483647&v=beta&t=83RkzALMJjbqpSvBJ8YVr9M9rqEaXa2HUVTnwDjd9xI",
-    href: "https://github.com",
-    live: "https://example.com",
-    featured: true,
-    stat: "10k+ users",
-  },
-  {
-    title: "Pulse CMS",
-    description:
-      "Headless content management system with a visual block editor, multi-locale support, and a blazing-fast delivery API.",
-    tags: ["Node.js", "GraphQL", "MongoDB", "React"],
-    image: "https://pulsecms.com/assets/assets/branding/pulse-circle@2x.png",
-    href: "https://github.com",
-    live: "https://example.com",
-    featured: false,
-    stat: "Open source",
-  },
-  {
-    title: "Wavefront Audio",
-    description:
-      "Browser-based audio visualizer and waveform editor using the Web Audio API. Supports multi-track editing and export.",
-    tags: ["Web Audio API", "Canvas", "TypeScript"],
-    image: "https://i0.wp.com/wavefrontaudio.co/wp-content/uploads/2024/10/logo-color-WFA-12-e1729105921327.png?fit=800%2C452&ssl=1",
-    href: "https://github.com",
-    live: "https://example.com",
-    featured: false,
-    stat: "500+ stars",
-  },
-];
-
-const testimonials = [
-  {
-    name: "Sarah Chen",
-    role: "Head of Product, Veritas Labs",
-    avatar: "https://upload.wikimedia.org/wikipedia/commons/5/5e/Sarah_Chen_%E9%99%88%E6%B7%91%E6%A1%A6_1986_Malaysia_Concert_Live_Photo_Original_%28cropped%29.jpg",
-    quote:
-      "Alex delivered a product that exceeded every expectation. The attention to detail in both the code and the UI is remarkable. Our team velocity doubled after the design system shipped.",
-    stars: 5,
-  },
-  {
-    name: "Marcus Webb",
-    role: "CTO, Foundry Digital",
-    avatar: "https://upload.wikimedia.org/wikipedia/commons/thumb/6/6e/JMarcus_Webb.JPG/960px-JMarcus_Webb.JPG",
-    quote:
-      "Working with Alex felt like having a senior engineer and a designer in one. The codebase is clean, well-documented, and the animations are buttery smooth.",
-    stars: 5,
-  },
-  {
-    name: "Priya Nair",
-    role: "Founder, Bloom Studio",
-    avatar: "https://media.licdn.com/dms/image/v2/D5622AQE3NpM1FP01Yg/feedshare-shrink_800/B56Zf4pvKcGUAg-/0/1752223383746?e=2147483647&v=beta&t=C11dC6M36dpAKpcbBRMtusPrnkgE-cNJfHc93ZNpFoQ",
-    quote:
-      "From kickoff to launch in six weeks. Alex kept communication tight, shipped on time, and the final product looks like it cost three times what we paid.",
-    stars: 5,
-  },
-];
-
-const stats = [
-  { value: "5+", label: "Years of experience" },
-  { value: "40+", label: "Projects shipped" },
-  { value: "18", label: "Happy clients" },
-  { value: "99%", label: "On-time delivery" },
-];
-
-const iconMap: Record<string, React.ReactNode> = {
-  Layout: <Layout size={20} />,
-  Terminal: <Terminal size={20} />,
-  Sparkles: <Sparkles size={20} />,
-  Code: <Code size={20} />,
-};
-
-const socialIconMap: Record<string, React.ReactNode> = {
-  Github: <Github size={18} />,
-  Linkedin: <Linkedin size={18} />,
-  Twitter: <Twitter size={18} />,
-  Mail: <Mail size={18} />,
-};
-
-// ─── Motion helpers ──────────────────────────────────────────────────────────
-
-const heroTextVariant: Variants = {
-  hidden: { opacity: 0, y: 24 },
-  visible: (i: number) => ({
-    opacity: 1,
-    y: 0,
-    transition: { duration: 0.7, ease: "easeOut", delay: i * 0.12 },
-  }),
-};
-
-// ─── Page ────────────────────────────────────────────────────────────────────
-
-export default function HomePage() {
-  const shouldReduceMotion = useReducedMotion();
-
-  const [formState, setFormState] = useState({
-    name: "",
-    email: "",
-    message: "",
-  });
-  const [formSent, setFormSent] = useState(false);
-
-  function handleChange(
-    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
-  ) {
-    setFormState((prev) => ({ ...prev, [e.target.name]: e.target.value }));
-  }
-
-  function handleSubmit(e: React.FormEvent) {
-    e.preventDefault();
-    setFormSent(true);
-  }
-
-  const motionProps = (variants: Variants) =>
-    shouldReduceMotion
-      ? {}
-      : {
-          variants,
-          initial: "hidden" as const,
-          whileInView: "visible" as const,
-          viewport: { once: true, margin: "-80px" },
-        };
-
-  return (
-    <main className="bg-[#0a0a0a] text-white overflow-x-hidden">
-      {/* ── HERO ─────────────────────────────────────────────────────────── */}
-      <section
-        id="home"
-        className="relative min-h-screen flex flex-col justify-center px-6 md:px-10 pt-24 pb-16"
-      >
-        {/* Background glow */}
-        <div className="absolute inset-0 pointer-events-none">
-          <div className="absolute top-1/4 left-1/2 -translate-x-1/2 w-[700px] h-[500px] bg-purple-600/10 rounded-full blur-[120px]" />
-          <div className="absolute bottom-0 right-0 w-[400px] h-[400px] bg-sky-600/8 rounded-full blur-[100px]" />
-          {/* Subtle grid */}
-          <div
-            className="absolute inset-0 opacity-[0.025]"
-            style={{
-              backgroundImage:
-                "linear-gradient(rgba(255,255,255,0.5) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.5) 1px, transparent 1px)",
-              backgroundSize: "60px 60px",
-            }}
-          />
-        </div>
-
-        <div className="relative max-w-7xl mx-auto w-full grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
-          {/* Left: copy */}
-          <div>
-            <motion.div
-              custom={0}
-              variants={heroTextVariant}
-              initial="hidden"
-              animate="visible"
-              className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full border border-purple-500/30 bg-purple-500/10 text-purple-300 text-xs font-semibold tracking-widest uppercase mb-8"
-            >
-              <Sparkles size={12} />
-              {APP_TAGLINE}
-            </motion.div>
-
-            <motion.h1
-              custom={1}
-              variants={heroTextVariant}
-              initial="hidden"
-              animate="visible"
-              className="font-display text-5xl md:text-6xl xl:text-7xl font-bold tracking-tight leading-[1.05] text-balance mb-6"
-            >
-              Building{" "}
-              <span className="text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-sky-400">
-                digital products
-              </span>{" "}
-              people love to use.
-            </motion.h1>
-
-            <motion.p
-              custom={2}
-              variants={heroTextVariant}
-              initial="hidden"
-              animate="visible"
-              className="text-lg text-white/50 leading-relaxed max-w-lg mb-10"
-            >
-              {APP_DESCRIPTION} I specialize in React, Next.js, and expressive
-              UI that balances beauty with performance.
-            </motion.p>
-
-            <motion.div
-              custom={3}
-              variants={heroTextVariant}
-              initial="hidden"
-              animate="visible"
-              className="flex flex-wrap items-center gap-4"
-            >
-              <Link
-                href={CTA_HREF}
-                onClick={(e) => {
-                  e.preventDefault();
-                  document
-                    .querySelector(CTA_HREF)
-                    ?.scrollIntoView({ behavior: "smooth" });
-                }}
-                className="group inline-flex items-center gap-2 px-6 py-3 rounded-full bg-purple-500 hover:bg-purple-400 text-white font-semibold text-sm transition-all duration-300 shadow-[0_0_24px_rgba(168,85,247,0.35)] hover:shadow-[0_0_36px_rgba(168,85,247,0.55)] hover:scale-105 active:scale-95"
-              >
-                {CTA_LABEL}
-                <ArrowRight
-                  size={16}
-                  className="group-hover:translate-x-1 transition-transform duration-300"
-                />
-              </Link>
-
-              <Link
-                href="#projects"
-                onClick={(e) => {
-                  e.preventDefault();
-                  document
-                    .querySelector("#projects")
-                    ?.scrollIntoView({ behavior: "smooth" });
-                }}
-                className="inline-flex items-center gap-2 px-6 py-3 rounded-full border border-white/10 hover:border-white/25 text-white/70 hover:text-white font-semibold text-sm transition-all duration-300 hover:bg-white/5"
-              >
-                View Work
-              </Link>
-            </motion.div>
-
-            {/* Social row */}
-            <motion.div
-              custom={4}
-              variants={heroTextVariant}
-              initial="hidden"
-              animate="visible"
-              className="flex items-center gap-3 mt-10"
-            >
-              {socialLinks.map((s) => (
-                <a
-                  key={s.label}
-                  href={s.href}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  aria-label={s.label}
-                  className="w-9 h-9 rounded-full border border-white/10 flex items-center justify-center text-white/40 hover:text-purple-400 hover:border-purple-500/40 transition-all duration-300 hover:bg-purple-500/10"
-                >
-                  {socialIconMap[s.icon]}
-                </a>
-              ))}
-              <span className="ml-2 text-xs text-white/25 tracking-wide">
-                Find me online
-              </span>
-            </motion.div>
-          </div>
-
-          {/* Right: visual card */}
-          <motion.div
-            variants={slideInRight}
-            initial="hidden"
-            animate="visible"
-            className="hidden lg:block"
-          >
-            <div className="relative">
-              {/* Main card */}
-              <div className="relative rounded-2xl overflow-hidden border border-white/8 shadow-[0_24px_80px_rgba(0,0,0,0.6)]">
-                <img
-                  src="https://comicvine.gamespot.com/a/uploads/scale_medium/3/31666/869863-mercer.jpg"
-                  alt="Alex Mercer at work"
-                  className="w-full h-[480px] object-cover"
-                />
-                <div className="absolute inset-0 bg-gradient-to-t from-[#0a0a0a]/80 via-transparent to-transparent" />
-              </div>
-
-              {/* Floating stat badge */}
-              <motion.div
-                animate={
-                  shouldReduceMotion ? {} : { y: [0, -8, 0] }
-                }
-                transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
-                className="absolute -bottom-6 -left-8 bg-[#161616] border border-white/10 rounded-2xl px-5 py-4 shadow-[0_8px_32px_rgba(0,0,0,0.5)]"
-              >
-                <p className="text-2xl font-bold text-white">40+</p>
-                <p className="text-xs text-white/40 mt-0.5">Projects shipped</p>
-              </motion.div>
-
-              {/* Floating tech badge */}
-              <motion.div
-                animate={
-                  shouldReduceMotion ? {} : { y: [0, 6, 0] }
-                }
-                transition={{
-                  duration: 3.5,
-                  repeat: Infinity,
-                  ease: "easeInOut",
-                  delay: 0.8,
-                }}
-                className="absolute -top-5 -right-6 bg-[#161616] border border-purple-500/25 rounded-2xl px-4 py-3 shadow-[0_8px_32px_rgba(0,0,0,0.5)]"
-              >
-                <div className="flex items-center gap-2">
-                  <div className="w-2 h-2 rounded-full bg-green-400 animate-pulse" />
-                  <p className="text-xs font-semibold text-white/80">
-                    Available for work
-                  </p>
-                </div>
-              </motion.div>
-            </div>
-          </motion.div>
-        </div>
-
-        {/* Scroll indicator */}
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 1.8, duration: 0.6 }}
-          className="absolute bottom-8 left-1/2 -translate-x-1/2 flex flex-col items-center gap-2"
-        >
-          <span className="text-[10px] uppercase tracking-widest text-white/20">
-            Scroll
-          </span>
-          <motion.div
-            animate={shouldReduceMotion ? {} : { y: [0, 6, 0] }}
-            transition={{ duration: 1.4, repeat: Infinity, ease: "easeInOut" }}
-            className="w-px h-8 bg-gradient-to-b from-white/20 to-transparent"
-          />
-        </motion.div>
-      </section>
-
-      {/* ── ABOUT ────────────────────────────────────────────────────────── */}
-      <section id="about" className="py-28 md:py-36 px-6 md:px-10">
-        <div className="max-w-7xl mx-auto">
-          {/* Stats row */}
-          <motion.div
-            variants={staggerContainer}
-            {...motionProps(staggerContainer)}
-            className="grid grid-cols-2 md:grid-cols-4 gap-px bg-white/5 rounded-2xl overflow-hidden mb-24 border border-white/5"
-          >
-            {stats.map((stat) => (
-              <motion.div
-                key={stat.label}
-                variants={scaleIn}
-                className="bg-[#0f0f0f] px-8 py-10 text-center"
-              >
-                <p className="text-4xl font-bold text-white tracking-tight mb-1">
-                  {stat.value}
-                </p>
-                <p className="text-sm text-white/35">{stat.label}</p>
-              </motion.div>
-            ))}
-          </motion.div>
-
-          {/* About split */}
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
-            <motion.div variants={slideInLeft} {...motionProps(slideInLeft)}>
-              <div className="relative rounded-2xl overflow-hidden border border-white/8 shadow-[0_16px_64px_rgba(0,0,0,0.5)]">
-                <img
-                  src="https://img.a.transfermarkt.technology/portrait/big/27523-1763050290.jpg?lm=1"
-                  alt="Alex's coding setup"
-                  className="w-full h-[420px] object-cover"
-                />
-                <div className="absolute inset-0 bg-gradient-to-tr from-purple-900/30 to-transparent" />
-              </div>
-            </motion.div>
-
-            <motion.div
-              variants={staggerContainer}
-              {...motionProps(staggerContainer)}
-            >
-              <motion.p
-                variants={fadeInUp}
-                className="text-xs font-semibold uppercase tracking-widest text-purple-400 mb-4"
-              >
-                About Me
-              </motion.p>
-              <motion.h2
-                variants={fadeInUp}
-                className="font-display text-4xl md:text-5xl font-bold tracking-tight leading-tight text-balance mb-6"
-              >
-                Code is craft. I treat it that way.
-              </motion.h2>
-              <motion.p
-                variants={fadeInUp}
-                className="text-white/50 leading-relaxed mb-4"
-              >
-                I'm {APP_NAME}, a full-stack developer with five years of
-                experience turning complex problems into elegant, user-centered
-                products. My work lives at the intersection of engineering
-                rigor and design sensibility.
-              </motion.p>
-              <motion.p
-                variants={fadeInUp}
-                className="text-white/50 leading-relaxed mb-8"
-              >
-                I've shipped products for early-stage startups and established
-                companies alike, always with the same commitment: clean
-                architecture, accessible interfaces, and experiences that feel
-                genuinely delightful to use.
-              </motion.p>
-
-              <motion.div
-                variants={fadeInUp}
-                className="flex flex-wrap gap-3"
-              >
-                {[
-                  "Open to freelance",
-                  "Remote-first",
-                  "Fast communicator",
-                  "Detail-obsessed",
-                ].map((tag) => (
-                  <span
-                    key={tag}
-                    className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white/5 border border-white/8 text-xs text-white/60"
-                  >
-                    <CheckCircle size={11} className="text-purple-400" />
-                    {tag}
-                  </span>
-                ))}
-              </motion.div>
-            </motion.div>
-          </div>
-        </div>
-      </section>
-
-      {/* ── SKILLS ───────────────────────────────────────────────────────── */}
-      <section
-        id="skills"
-        className="py-28 md:py-36 px-6 md:px-10 bg-[#0d0d0d]"
-      >
-        <div className="max-w-7xl mx-auto">
-          <motion.div
-            variants={staggerContainer}
-            {...motionProps(staggerContainer)}
-            className="text-center mb-16"
-          >
-            <motion.p
-              variants={fadeInUp}
-              className="text-xs font-semibold uppercase tracking-widest text-purple-400 mb-4"
-            >
-              Skills
-            </motion.p>
-            <motion.h2
-              variants={fadeInUp}
-              className="font-display text-4xl md:text-5xl font-bold tracking-tight text-balance"
-            >
-              The tools I reach for
-            </motion.h2>
-          </motion.div>
-
-          <motion.div
-            variants={staggerContainer}
-            {...motionProps(staggerContainer)}
-            className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5"
-          >
-            {skills.map((skill) => (
-              <motion.div
-                key={skill.category}
-                variants={scaleIn}
-                whileHover={
-                  shouldReduceMotion
-                    ? {}
-                    : { y: -4, transition: { duration: 0.2 } }
-                }
-                className={`relative rounded-2xl border ${skill.border} bg-gradient-to-b ${skill.color} p-6 shadow-[0_1px_2px_rgba(0,0,0,0.04),0_8px_24px_-8px_rgba(0,0,0,0.3)] transition-shadow duration-300`}
-              >
-                <div
-                  className={`w-10 h-10 rounded-xl bg-white/5 flex items-center justify-center ${skill.accent} mb-5`}
-                >
-                  {iconMap[skill.icon]}
-                </div>
-                <h3 className="font-semibold text-white mb-4">
-                  {skill.category}
-                </h3>
-                <ul className="space-y-2">
-                  {skill.items.map((item) => (
-                    <li
-                      key={item}
-                      className="flex items-center gap-2 text-sm text-white/50"
-                    >
-                      <span
-                        className={`w-1 h-1 rounded-full ${skill.accent.replace("text-", "bg-")}`}
-                      />
-                      {item}
-                    </li>
-                  ))}
-                </ul>
-              </motion.div>
-            ))}
-          </motion.div>
-        </div>
-      </section>
-
-      {/* ── PROJECTS ─────────────────────────────────────────────────────── */}
-      <section id="projects" className="py-28 md:py-36 px-6 md:px-10">
-        <div className="max-w-7xl mx-auto">
-          <motion.div
-            variants={staggerContainer}
-            {...motionProps(staggerContainer)}
-            className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-14"
-          >
-            <div>
-              <motion.p
-                variants={fadeInUp}
-                className="text-xs font-semibold uppercase tracking-widest text-purple-400 mb-4"
-              >
-                Projects
-              </motion.p>
-              <motion.h2
-                variants={fadeInUp}
-                className="font-display text-4xl md:text-5xl font-bold tracking-tight text-balance"
-              >
-                Selected work
-              </motion.h2>
-            </div>
-            <motion.a
-              variants={fadeInUp}
-              href="https://github.com"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-flex items-center gap-2 text-sm text-white/50 hover:text-white transition-colors duration-200 group"
-            >
-              <Github size={16} />
-              All repos on GitHub
-              <ArrowRight
-                size={14}
-                className="group-hover:translate-x-1 transition-transform duration-200"
-              />
-            </motion.a>
-          </motion.div>
-
-          {/* Featured projects — large */}
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
-            {projects
-              .filter((p) => p.featured)
-              .map((project, i) => (
-                <motion.div
-                  key={project.title}
-                  variants={i === 0 ? slideInLeft : slideInRight}
-                  {...motionProps(i === 0 ? slideInLeft : slideInRight)}
-                  whileHover={
-                    shouldReduceMotion
-                      ? {}
-                      : { y: -4, transition: { duration: 0.2 } }
-                  }
-                  className="group relative rounded-2xl overflow-hidden border border-white/8 bg-[#111] shadow-[0_8px_32px_rgba(0,0,0,0.4)] transition-shadow duration-300 hover:shadow-[0_16px_48px_rgba(0,0,0,0.6)]"
-                >
-                  <div className="relative h-56 overflow-hidden">
-                    <img
-                      src={project.image}
-                      alt={project.title}
-                      className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
-                    />
-                    <div className="absolute inset-0 bg-gradient-to-t from-[#111] via-[#111]/40 to-transparent" />
-                    <span className="absolute top-4 right-4 px-3 py-1 rounded-full bg-purple-500/20 border border-purple-500/30 text-purple-300 text-xs font-semibold">
-                      {project.stat}
-                    </span>
-                  </div>
-                  <div className="p-6">
-                    <h3 className="font-display text-xl font-bold text-white mb-2">
-                      {project.title}
-                    </h3>
-                    <p className="text-sm text-white/45 leading-relaxed mb-5">
-                      {project.description}
-                    </p>
-                    <div className="flex flex-wrap gap-2 mb-6">
-                      {project.tags.map((tag) => (
-                        <span
-                          key={tag}
-                          className="px-2.5 py-1 rounded-md bg-white/5 border border-white/8 text-xs text-white/50"
-                        >
-                          {tag}
-                        </span>
-                      ))}
-                    </div>
-                    <div className="flex items-center gap-3">
-                      <a
-                        href={project.href}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="inline-flex items-center gap-1.5 text-xs font-semibold text-white/50 hover:text-white transition-colors duration-200"
-                      >
-                        <Github size={14} /> Source
-                      </a>
-                      <a
-                        href={project.live}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="inline-flex items-center gap-1.5 text-xs font-semibold text-purple-400 hover:text-purple-300 transition-colors duration-200"
-                      >
-                        <ExternalLink size={14} /> Live demo
-                      </a>
-                    </div>
-                  </div>
-                </motion.div>
-              ))}
-          </div>
-
-          {/* Smaller projects — row */}
-          <motion.div
-            variants={staggerContainer}
-            {...motionProps(staggerContainer)}
-            className="grid grid-cols-1 sm:grid-cols-2 gap-6"
-          >
-            {projects
-              .filter((p) => !p.featured)
-              .map((project) => (
-                <motion.div
-                  key={project.title}
-                  variants={fadeInUp}
-                  whileHover={
-                    shouldReduceMotion
-                      ? {}
-                      : { y: -3, transition: { duration: 0.2 } }
-                  }
-                  className="group flex gap-5 rounded-2xl border border-white/8 bg-[#111] p-5 shadow-[0_4px_16px_rgba(0,0,0,0.3)] hover:shadow-[0_8px_32px_rgba(0,0,0,0.5)] transition-shadow duration-300"
-                >
-                  <div className="w-20 h-20 rounded-xl overflow-hidden flex-shrink-0 border border-white/8">
-                    <img
-                      src={project.image}
-                      alt={project.title}
-                      className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
-                    />
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-start justify-between gap-2 mb-1.5">
-                      <h3 className="font-semibold text-white text-sm">
-                        {project.title}
-                      </h3>
-                      <span className="text-[10px] px-2 py-0.5 rounded-full bg-white/5 border border-white/8 text-white/35 whitespace-nowrap">
-                        {project.stat}
-                      </span>
-                    </div>
-                    <p className="text-xs text-white/40 leading-relaxed mb-3 line-clamp-2">
-                      {project.description}
-                    </p>
-                    <div className="flex items-center gap-3">
-                      <a
-                        href={project.href}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="text-[11px] text-white/40 hover:text-white transition-colors duration-200 flex items-center gap-1"
-                      >
-                        <Github size={11} /> Code
-                      </a>
-                      <a
-                        href={project.live}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="text-[11px] text-purple-400 hover:text-purple-300 transition-colors duration-200 flex items-center gap-1"
-                      >
-                        <ExternalLink size={11} /> Demo
-                      </a>
-                    </div>
-                  </div>
-                </motion.div>
-              ))}
-          </motion.div>
-        </div>
-      </section>
-
-      {/* ── TESTIMONIALS ─────────────────────────────────────────────────── */}
-      <section className="py-28 md:py-36 px-6 md:px-10 bg-[#0d0d0d]">
-        <div className="max-w-7xl mx-auto">
-          <motion.div
-            variants={staggerContainer}
-            {...motionProps(staggerContainer)}
-            className="text-center mb-16"
-          >
-            <motion.p
-              variants={fadeInUp}
-              className="text-xs font-semibold uppercase tracking-widest text-purple-400 mb-4"
-            >
-              Testimonials
-            </motion.p>
-            <motion.h2
-              variants={fadeInUp}
-              className="font-display text-4xl md:text-5xl font-bold tracking-tight text-balance"
-            >
-              What clients say
-            </motion.h2>
-          </motion.div>
-
-          <motion.div
-            variants={staggerContainer}
-            {...motionProps(staggerContainer)}
-            className="grid grid-cols-1 md:grid-cols-3 gap-6"
-          >
-            {testimonials.map((t, i) => (
-              <motion.div
-                key={t.name}
-                variants={fadeInUp}
-                whileHover={
-                  shouldReduceMotion
-                    ? {}
-                    : { y: -4, transition: { duration: 0.2 } }
-                }
-                className={`relative rounded-2xl border border-white/8 bg-[#111] p-7 shadow-[0_4px_24px_rgba(0,0,0,0.3)] ${
-                  i === 1
-                    ? "md:mt-8 border-purple-500/20 shadow-[0_4px_24px_rgba(168,85,247,0.1)]"
-                    : ""
-                }`}
-              >
-                {/* Stars */}
-                <div className="flex gap-1 mb-5">
-                  {Array.from({ length: t.stars }).map((_, si) => (
-                    <Star
-                      key={si}
-                      size={13}
-                      className="text-amber-400 fill-amber-400"
-                    />
-                  ))}
-                </div>
-                <p className="text-sm text-white/60 leading-relaxed mb-6 italic">
-                  "{t.quote}"
-                </p>
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-full overflow-hidden border border-white/10 flex-shrink-0">
-                    <img
-                      src={t.avatar}
-                      alt={t.name}
-                      className="w-full h-full object-cover"
-                    />
-                  </div>
-                  <div>
-                    <p className="text-sm font-semibold text-white">{t.name}</p>
-                    <p className="text-xs text-white/35">{t.role}</p>
-                  </div>
-                </div>
-              </motion.div>
-            ))}
-          </motion.div>
-        </div>
-      </section>
-
-      {/* ── CONTACT ──────────────────────────────────────────────────────── */}
-      <section id="contact" className="py-28 md:py-36 px-6 md:px-10">
-        <div className="max-w-7xl mx-auto">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-start">
-            {/* Left: copy */}
-            <motion.div
-              variants={staggerContainer}
-              {...motionProps(staggerContainer)}
-            >
-              <motion.p
-                variants={fadeInUp}
-                className="text-xs font-semibold uppercase tracking-widest text-purple-400 mb-4"
-              >
-                Contact
-              </motion.p>
-              <motion.h2
-                variants={fadeInUp}
-                className="font-display text-4xl md:text-5xl font-bold tracking-tight text-balance mb-6"
-              >
-                Let's build something great together.
-              </motion.h2>
-              <motion.p
-                variants={fadeInUp}
-                className="text-white/50 leading-relaxed mb-10"
-              >
-                Whether you have a project in mind, want to collaborate, or
-                just want to say hello, my inbox is always open. I typically
-                respond within 24 hours.
-              </motion.p>
-
-              <motion.div variants={fadeInUp} className="space-y-4">
-                {[
-                  {
-                    icon: <Mail size={16} />,
-                    label: "Email",
-                    value: "alex@example.com",
-                    href: "mailto:alex@example.com",
-                  },
-                  {
-                    icon: <Github size={16} />,
-                    label: "GitHub",
-                    value: "github.com/alexmercer",
-                    href: "https://github.com",
-                  },
-                  {
-                    icon: <Linkedin size={16} />,
-                    label: "LinkedIn",
-                    value: "linkedin.com/in/alexmercer",
-                    href: "https://linkedin.com",
-                  },
-                ].map((contact) => (
-                  <a
-                    key={contact.label}
-                    href={contact.href}
-                    target={
-                      contact.href.startsWith("mailto") ? undefined : "_blank"
-                    }
-                    rel="noopener noreferrer"
-                    className="flex items-center gap-4 p-4 rounded-xl border border-white/8 bg-white/3 hover:bg-white/6 hover:border-white/15 transition-all duration-300 group"
-                  >
-                    <div className="w-9 h-9 rounded-lg bg-purple-500/15 border border-purple-500/25 flex items-center justify-center text-purple-400">
-                      {contact.icon}
-                    </div>
-                    <div>
-                      <p className="text-xs text-white/30 mb-0.5">
-                        {contact.label}
-                      </p>
-                      <p className="text-sm text-white/70 group-hover:text-white transition-colors duration-200">
-                        {contact.value}
-                      </p>
-                    </div>
-                    <ArrowRight
-                      size={14}
-                      className="ml-auto text-white/20 group-hover:text-purple-400 group-hover:translate-x-1 transition-all duration-200"
-                    />
-                  </a>
-                ))}
-              </motion.div>
-            </motion.div>
-
-            {/* Right: form */}
-            <motion.div
-              variants={slideInRight}
-              {...motionProps(slideInRight)}
-              className="rounded-2xl border border-white/8 bg-[#111] p-8 shadow-[0_8px_40px_rgba(0,0,0,0.4)]"
-            >
-              {formSent ? (
-                <motion.div
-                  variants={scaleIn}
-                  initial="hidden"
-                  animate="visible"
-                  className="flex flex-col items-center justify-center py-16 text-center"
-                >
-                  <div className="w-16 h-16 rounded-full bg-purple-500/15 border border-purple-500/30 flex items-center justify-center mb-5">
-                    <CheckCircle size={28} className="text-purple-400" />
-                  </div>
-                  <h3 className="font-display text-xl font-bold text-white mb-2">
-                    Message sent!
-                  </h3>
-                  <p className="text-sm text-white/45">
-                    Thanks for reaching out. I'll get back to you within 24
-                    hours.
-                  </p>
-                </motion.div>
-              ) : (
-                <form onSubmit={handleSubmit} className="space-y-5">
-                  <div>
-                    <label
-                      htmlFor="name"
-                      className="block text-xs font-semibold text-white/40 uppercase tracking-wider mb-2"
-                    >
-                      Name
-                    </label>
-                    <div className="relative">
-                      <User
-                        size={14}
-                        className="absolute left-3.5 top-1/2 -translate-y-1/2 text-white/25"
-                      />
-                      <input
-                        id="name"
-                        name="name"
-                        type="text"
-                        required
-                        value={formState.name}
-                        onChange={handleChange}
-                        placeholder="Your name"
-                        className="w-full bg-white/5 border border-white/10 rounded-xl pl-9 pr-4 py-3 text-sm text-white placeholder:text-white/20 focus:outline-none focus:border-purple-500/50 focus:bg-white/8 transition-all duration-200"
-                      />
-                    </div>
-                  </div>
-
-                  <div>
-                    <label
-                      htmlFor="email"
-                      className="block text-xs font-semibold text-white/40 uppercase tracking-wider mb-2"
-                    >
-                      Email
-                    </label>
-                    <div className="relative">
-                      <Mail
-                        size={14}
-                        className="absolute left-3.5 top-1/2 -translate-y-1/2 text-white/25"
-                      />
-                      <input
-                        id="email"
-                        name="email"
-                        type="email"
-                        required
-                        value={formState.email}
-                        onChange={handleChange}
-                        placeholder="you@example.com"
-                        className="w-full bg-white/5 border border-white/10 rounded-xl pl-9 pr-4 py-3 text-sm text-white placeholder:text-white/20 focus:outline-none focus:border-purple-500/50 focus:bg-white/8 transition-all duration-200"
-                      />
-                    </div>
-                  </div>
-
-                  <div>
-                    <label
-                      htmlFor="message"
-                      className="block text-xs font-semibold text-white/40 uppercase tracking-wider mb-2"
-                    >
-                      Message
-                    </label>
-                    <div className="relative">
-                      <FileText
-                        size={14}
-                        className="absolute left-3.5 top-3.5 text-white/25"
-                      />
-                      <textarea
-                        id="message"
-                        name="message"
-                        required
-                        rows={5}
-                        value={formState.message}
-                        onChange={handleChange}
-                        placeholder="Tell me about your project..."
-                        className="w-full bg-white/5 border border-white/10 rounded-xl pl-9 pr-4 py-3 text-sm text-white placeholder:text-white/20 focus:outline-none focus:border-purple-500/50 focus:bg-white/8 transition-all duration-200 resize-none"
-                      />
-                    </div>
-                  </div>
-
-                  <motion.button
-                    whileHover={
-                      shouldReduceMotion ? {} : { scale: 1.02 }
-                    }
-                    whileTap={shouldReduceMotion ? {} : { scale: 0.97 }}
-                    type="submit"
-                    className="w-full inline-flex items-center justify-center gap-2 px-6 py-3.5 rounded-xl bg-purple-500 hover:bg-purple-400 text-white font-semibold text-sm transition-all duration-300 shadow-[0_0_24px_rgba(168,85,247,0.3)] hover:shadow-[0_0_36px_rgba(168,85,247,0.5)]"
-                  >
-                    <Send size={15} />
-                    Send Message
-                  </motion.button>
-                </form>
-              )}
-            </motion.div>
-          </div>
-        </div>
-      </section>
-    </main>
-  );
+"use client";
+
+import { useState, useRef } from "react";
+import Link from "next/link";
+import { motion, useReducedMotion, type Variants } from "framer-motion";
+import { ArrowRight, Code2 as Github, Briefcase as Linkedin, MessageCircle as Twitter, Mail, ExternalLink, Code, Sparkles, Layout, Terminal, Star, CheckCircle, Send, User, FileText } from 'lucide-react';
+import {
+  APP_NAME,
+  APP_TAGLINE,
+  APP_DESCRIPTION,
+  CTA_LABEL,
+  CTA_HREF,
+  socialLinks,
+} from "@/lib/data";
+import {
+  fadeInUp,
+  fadeIn,
+  staggerContainer,
+  scaleIn,
+  slideInLeft,
+  slideInRight,
+} from "@/lib/motion";
+
+// ─── Inline Data ────────────────────────────────────────────────────────────
+
+const skills = [
+  {
+    category: "Frontend",
+    icon: "Layout",
+    color: "from-purple-500/20 to-purple-500/5",
+    accent: "text-purple-400",
+    border: "border-purple-500/20",
+    items: ["React", "Next.js", "TypeScript", "Tailwind CSS", "Framer Motion"],
+  },
+  {
+    category: "Backend",
+    icon: "Terminal",
+    color: "from-sky-500/20 to-sky-500/5",
+    accent: "text-sky-400",
+    border: "border-sky-500/20",
+    items: ["Node.js", "Express", "PostgreSQL", "Prisma", "REST & GraphQL"],
+  },
+  {
+    category: "Craft",
+    icon: "Sparkles",
+    color: "from-rose-500/20 to-rose-500/5",
+    accent: "text-rose-400",
+    border: "border-rose-500/20",
+    items: [
+      "UI/UX Design",
+      "Design Systems",
+      "Accessibility",
+      "Performance",
+      "Animation",
+    ],
+  },
+  {
+    category: "Tooling",
+    icon: "Code",
+    color: "from-amber-500/20 to-amber-500/5",
+    accent: "text-amber-400",
+    border: "border-amber-500/20",
+    items: ["Git & GitHub", "Docker", "Vercel", "Figma", "CI/CD Pipelines"],
+  },
+];
+
+const projects = [
+  {
+    title: "Luminary UI",
+    description:
+      "A comprehensive design system and component library built for scale. Ships with 60+ accessible components, dark mode, and a Figma kit.",
+    tags: ["React", "TypeScript", "Storybook", "Radix UI"],
+    image: "https://assets-us-01.kc-usercontent.com/90e79cae-25c6-00b5-6f5b-27efe5c250ab/76b96548-694f-46d7-a2f4-5b6f1b865f2d/UX%20Design.jpg?h=474&fm=webp",
+    href: "https://github.com",
+    live: "https://example.com",
+    featured: true,
+    stat: "60+ components",
+  },
+  {
+    title: "Orbit Analytics",
+    description:
+      "Real-time SaaS analytics dashboard with customizable widgets, cohort analysis, and automated reporting for growth teams.",
+    tags: ["Next.js", "Recharts", "Prisma", "PostgreSQL"],
+    image: "https://media.licdn.com/dms/image/v2/C4D0BAQGpxO-qmVX71w/company-logo_200_200/company-logo_200_200/0/1631343009150?e=2147483647&v=beta&t=83RkzALMJjbqpSvBJ8YVr9M9rqEaXa2HUVTnwDjd9xI",
+    href: "https://github.com",
+    live: "https://example.com",
+    featured: true,
+    stat: "10k+ users",
+  },
+  {
+    title: "Pulse CMS",
+    description:
+      "Headless content management system with a visual block editor, multi-locale support, and a blazing-fast delivery API.",
+    tags: ["Node.js", "GraphQL", "MongoDB", "React"],
+    image: "https://pulsecms.com/assets/assets/branding/pulse-circle@2x.png",
+    href: "https://github.com",
+    live: "https://example.com",
+    featured: false,
+    stat: "Open source",
+  },
+  {
+    title: "Wavefront Audio",
+    description:
+      "Browser-based audio visualizer and waveform editor using the Web Audio API. Supports multi-track editing and export.",
+    tags: ["Web Audio API", "Canvas", "TypeScript"],
+    image: "https://i0.wp.com/wavefrontaudio.co/wp-content/uploads/2024/10/logo-color-WFA-12-e1729105921327.png?fit=800%2C452&ssl=1",
+    href: "https://github.com",
+    live: "https://example.com",
+    featured: false,
+    stat: "500+ stars",
+  },
+];
+
+const testimonials = [
+  {
+    name: "Sarah Chen",
+    role: "Head of Product, Veritas Labs",
+    avatar: "https://upload.wikimedia.org/wikipedia/commons/5/5e/Sarah_Chen_%E9%99%88%E6%B7%91%E6%A1%A6_1986_Malaysia_Concert_Live_Photo_Original_%28cropped%29.jpg",
+    quote:
+      "Alex delivered a product that exceeded every expectation. The attention to detail in both the code and the UI is remarkable. Our team velocity doubled after the design system shipped.",
+    stars: 5,
+  },
+  {
+    name: "Marcus Webb",
+    role: "CTO, Foundry Digital",
+    avatar: "https://upload.wikimedia.org/wikipedia/commons/thumb/6/6e/JMarcus_Webb.JPG/960px-JMarcus_Webb.JPG",
+    quote:
+      "Working with Alex felt like having a senior engineer and a designer in one. The codebase is clean, well-documented, and the animations are buttery smooth.",
+    stars: 5,
+  },
+  {
+    name: "Priya Nair",
+    role: "Founder, Bloom Studio",
+    avatar: "https://media.licdn.com/dms/image/v2/D5622AQE3NpM1FP01Yg/feedshare-shrink_800/B56Zf4pvKcGUAg-/0/1752223383746?e=2147483647&v=beta&t=C11dC6M36dpAKpcbBRMtusPrnkgE-cNJfHc93ZNpFoQ",
+    quote:
+      "From kickoff to launch in six weeks. Alex kept communication tight, shipped on time, and the final product looks like it cost three times what we paid.",
+    stars: 5,
+  },
+];
+
+const stats = [
+  { value: "5+", label: "Years of experience" },
+  { value: "40+", label: "Projects shipped" },
+  { value: "18", label: "Happy clients" },
+  { value: "99%", label: "On-time delivery" },
+];
+
+const iconMap: Record<string, React.ReactNode> = {
+  Layout: <Layout size={20} />,
+  Terminal: <Terminal size={20} />,
+  Sparkles: <Sparkles size={20} />,
+  Code: <Code size={20} />,
+};
+
+const socialIconMap: Record<string, React.ReactNode> = {
+  Github: <Github size={18} />,
+  Linkedin: <Linkedin size={18} />,
+  Twitter: <Twitter size={18} />,
+  Mail: <Mail size={18} />,
+};
+
+// ─── Motion helpers ──────────────────────────────────────────────────────────
+
+const heroTextVariant: Variants = {
+  hidden: { opacity: 0, y: 24 },
+  visible: (i: number) => ({
+    opacity: 1,
+    y: 0,
+    transition: { duration: 0.7, ease: "easeOut", delay: i * 0.12 },
+  }),
+};
+
+// ─── Page ────────────────────────────────────────────────────────────────────
+
+export default function HomePage() {
+  const shouldReduceMotion = useReducedMotion();
+
+  const [formState, setFormState] = useState({
+    name: "",
+    email: "",
+    message: "",
+  });
+  const [formSent, setFormSent] = useState(false);
+
+  function handleChange(
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
+  ) {
+    setFormState((prev) => ({ ...prev, [e.target.name]: e.target.value }));
+  }
+
+  function handleSubmit(e: React.FormEvent) {
+    e.preventDefault();
+    setFormSent(true);
+  }
+
+  const motionProps = (variants: Variants) =>
+    shouldReduceMotion
+      ? {}
+      : {
+          variants,
+          initial: "hidden" as const,
+          whileInView: "visible" as const,
+          viewport: { once: true, margin: "-80px" },
+        };
+
+  return (
+    <main className="bg-[#0a0a0a] text-white overflow-x-hidden">
+      {/* ── HERO ─────────────────────────────────────────────────────────── */}
+      <section
+        id="home"
+        className="relative min-h-screen flex flex-col justify-center px-6 md:px-10 pt-24 pb-16"
+      >
+        {/* Background glow */}
+        <div className="absolute inset-0 pointer-events-none">
+          <div className="absolute top-1/4 left-1/2 -translate-x-1/2 w-[700px] h-[500px] bg-purple-600/10 rounded-full blur-[120px]" />
+          <div className="absolute bottom-0 right-0 w-[400px] h-[400px] bg-sky-600/8 rounded-full blur-[100px]" />
+          {/* Subtle grid */}
+          <div
+            className="absolute inset-0 opacity-[0.025]"
+            style={{
+              backgroundImage:
+                "linear-gradient(rgba(255,255,255,0.5) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.5) 1px, transparent 1px)",
+              backgroundSize: "60px 60px",
+            }}
+          />
+        </div>
+
+        <div className="relative max-w-7xl mx-auto w-full grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
+          {/* Left: copy */}
+          <div>
+            <motion.div
+              custom={0}
+              variants={heroTextVariant}
+              initial="hidden"
+              animate="visible"
+              className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full border border-purple-500/30 bg-purple-500/10 text-purple-300 text-xs font-semibold tracking-widest uppercase mb-8"
+            >
+              <Sparkles size={12} />
+              {APP_TAGLINE}
+            </motion.div>
+
+            <motion.h1
+              custom={1}
+              variants={heroTextVariant}
+              initial="hidden"
+              animate="visible"
+              className="font-display text-5xl md:text-6xl xl:text-7xl font-bold tracking-tight leading-[1.05] text-balance mb-6"
+            >
+              Building{" "}
+              <span className="text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-sky-400">
+                digital products
+              </span>{" "}
+              people love to use.
+            </motion.h1>
+
+            <motion.p
+              custom={2}
+              variants={heroTextVariant}
+              initial="hidden"
+              animate="visible"
+              className="text-lg text-white/50 leading-relaxed max-w-lg mb-10"
+            >
+              {APP_DESCRIPTION} I specialize in React, Next.js, and expressive
+              UI that balances beauty with performance.
+            </motion.p>
+
+            <motion.div
+              custom={3}
+              variants={heroTextVariant}
+              initial="hidden"
+              animate="visible"
+              className="flex flex-wrap items-center gap-4"
+            >
+              <Link
+                href={CTA_HREF}
+                onClick={(e) => {
+                  e.preventDefault();
+                  document
+                    .querySelector(CTA_HREF)
+                    ?.scrollIntoView({ behavior: "smooth" });
+                }}
+                className="group inline-flex items-center gap-2 px-6 py-3 rounded-full bg-purple-500 hover:bg-purple-400 text-white font-semibold text-sm transition-all duration-300 shadow-[0_0_24px_rgba(168,85,247,0.35)] hover:shadow-[0_0_36px_rgba(168,85,247,0.55)] hover:scale-105 active:scale-95"
+              >
+                {CTA_LABEL}
+                <ArrowRight
+                  size={16}
+                  className="group-hover:translate-x-1 transition-transform duration-300"
+                />
+              </Link>
+
+              <Link
+                href="#projects"
+                onClick={(e) => {
+                  e.preventDefault();
+                  document
+                    .querySelector("#projects")
+                    ?.scrollIntoView({ behavior: "smooth" });
+                }}
+                className="inline-flex items-center gap-2 px-6 py-3 rounded-full border border-white/10 hover:border-white/25 text-white/70 hover:text-white font-semibold text-sm transition-all duration-300 hover:bg-white/5"
+              >
+                View Work
+              </Link>
+            </motion.div>
+
+            {/* Social row */}
+            <motion.div
+              custom={4}
+              variants={heroTextVariant}
+              initial="hidden"
+              animate="visible"
+              className="flex items-center gap-3 mt-10"
+            >
+              {socialLinks.map((s) => (
+                <a
+                  key={s.label}
+                  href={s.href}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  aria-label={s.label}
+                  className="w-9 h-9 rounded-full border border-white/10 flex items-center justify-center text-white/40 hover:text-purple-400 hover:border-purple-500/40 transition-all duration-300 hover:bg-purple-500/10"
+                >
+                  {socialIconMap[s.icon]}
+                </a>
+              ))}
+              <span className="ml-2 text-xs text-white/25 tracking-wide">
+                Find me online
+              </span>
+            </motion.div>
+          </div>
+
+          {/* Right: visual card */}
+          <motion.div
+            variants={slideInRight}
+            initial="hidden"
+            animate="visible"
+            className="hidden lg:block"
+          >
+            <div className="relative">
+              {/* Main card */}
+              <div className="relative rounded-2xl overflow-hidden border border-white/8 shadow-[0_24px_80px_rgba(0,0,0,0.6)]">
+                <img
+                  src="https://comicvine.gamespot.com/a/uploads/scale_medium/3/31666/869863-mercer.jpg"
+                  alt="Alex Mercer at work"
+                  className="w-full h-[480px] object-cover"
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-[#0a0a0a]/80 via-transparent to-transparent" />
+              </div>
+
+              {/* Floating stat badge */}
+              <motion.div
+                animate={
+                  shouldReduceMotion ? {} : { y: [0, -8, 0] }
+                }
+                transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
+                className="absolute -bottom-6 -left-8 bg-[#161616] border border-white/10 rounded-2xl px-5 py-4 shadow-[0_8px_32px_rgba(0,0,0,0.5)]"
+              >
+                <p className="text-2xl font-bold text-white">40+</p>
+                <p className="text-xs text-white/40 mt-0.5">Projects shipped</p>
+              </motion.div>
+
+              {/* Floating tech badge */}
+              <motion.div
+                animate={
+                  shouldReduceMotion ? {} : { y: [0, 6, 0] }
+                }
+                transition={{
+                  duration: 3.5,
+                  repeat: Infinity,
+                  ease: "easeInOut",
+                  delay: 0.8,
+                }}
+                className="absolute -top-5 -right-6 bg-[#161616] border border-purple-500/25 rounded-2xl px-4 py-3 shadow-[0_8px_32px_rgba(0,0,0,0.5)]"
+              >
+                <div className="flex items-center gap-2">
+                  <div className="w-2 h-2 rounded-full bg-green-400 animate-pulse" />
+                  <p className="text-xs font-semibold text-white/80">
+                    Available for work
+                  </p>
+                </div>
+              </motion.div>
+            </div>
+          </motion.div>
+        </div>
+
+        {/* Scroll indicator */}
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 1.8, duration: 0.6 }}
+          className="absolute bottom-8 left-1/2 -translate-x-1/2 flex flex-col items-center gap-2"
+        >
+          <span className="text-[10px] uppercase tracking-widest text-white/20">
+            Scroll
+          </span>
+          <motion.div
+            animate={shouldReduceMotion ? {} : { y: [0, 6, 0] }}
+            transition={{ duration: 1.4, repeat: Infinity, ease: "easeInOut" }}
+            className="w-px h-8 bg-gradient-to-b from-white/20 to-transparent"
+          />
+        </motion.div>
+      </section>
+
+      {/* ── ABOUT ────────────────────────────────────────────────────────── */}
+      <section id="about" className="py-28 md:py-36 px-6 md:px-10">
+        <div className="max-w-7xl mx-auto">
+          {/* Stats row */}
+          <motion.div
+            variants={staggerContainer}
+            {...motionProps(staggerContainer)}
+            className="grid grid-cols-2 md:grid-cols-4 gap-px bg-white/5 rounded-2xl overflow-hidden mb-24 border border-white/5"
+          >
+            {stats.map((stat) => (
+              <motion.div
+                key={stat.label}
+                variants={scaleIn}
+                className="bg-[#0f0f0f] px-8 py-10 text-center"
+              >
+                <p className="text-4xl font-bold text-white tracking-tight mb-1">
+                  {stat.value}
+                </p>
+                <p className="text-sm text-white/35">{stat.label}</p>
+              </motion.div>
+            ))}
+          </motion.div>
+
+          {/* About split */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
+            <motion.div variants={slideInLeft} {...motionProps(slideInLeft)}>
+              <div className="relative rounded-2xl overflow-hidden border border-white/8 shadow-[0_16px_64px_rgba(0,0,0,0.5)]">
+                <img
+                  src="https://img.a.transfermarkt.technology/portrait/big/27523-1763050290.jpg?lm=1"
+                  alt="Alex's coding setup"
+                  className="w-full h-[420px] object-cover"
+                />
+                <div className="absolute inset-0 bg-gradient-to-tr from-purple-900/30 to-transparent" />
+              </div>
+            </motion.div>
+
+            <motion.div
+              variants={staggerContainer}
+              {...motionProps(staggerContainer)}
+            >
+              <motion.p
+                variants={fadeInUp}
+                className="text-xs font-semibold uppercase tracking-widest text-purple-400 mb-4"
+              >
+                About Me
+              </motion.p>
+              <motion.h2
+                variants={fadeInUp}
+                className="font-display text-4xl md:text-5xl font-bold tracking-tight leading-tight text-balance mb-6"
+              >
+                Code is craft. I treat it that way.
+              </motion.h2>
+              <motion.p
+                variants={fadeInUp}
+                className="text-white/50 leading-relaxed mb-4"
+              >
+                I'm {APP_NAME}, a full-stack developer with five years of
+                experience turning complex problems into elegant, user-centered
+                products. My work lives at the intersection of engineering
+                rigor and design sensibility.
+              </motion.p>
+              <motion.p
+                variants={fadeInUp}
+                className="text-white/50 leading-relaxed mb-8"
+              >
+                I've shipped products for early-stage startups and established
+                companies alike, always with the same commitment: clean
+                architecture, accessible interfaces, and experiences that feel
+                genuinely delightful to use.
+              </motion.p>
+
+              <motion.div
+                variants={fadeInUp}
+                className="flex flex-wrap gap-3"
+              >
+                {[
+                  "Open to freelance",
+                  "Remote-first",
+                  "Fast communicator",
+                  "Detail-obsessed",
+                ].map((tag) => (
+                  <span
+                    key={tag}
+                    className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white/5 border border-white/8 text-xs text-white/60"
+                  >
+                    <CheckCircle size={11} className="text-purple-400" />
+                    {tag}
+                  </span>
+                ))}
+              </motion.div>
+            </motion.div>
+          </div>
+        </div>
+      </section>
+
+      {/* ── SKILLS ───────────────────────────────────────────────────────── */}
+      <section
+        id="skills"
+        className="py-28 md:py-36 px-6 md:px-10 bg-[#0d0d0d]"
+      >
+        <div className="max-w-7xl mx-auto">
+          <motion.div
+            variants={staggerContainer}
+            {...motionProps(staggerContainer)}
+            className="text-center mb-16"
+          >
+            <motion.p
+              variants={fadeInUp}
+              className="text-xs font-semibold uppercase tracking-widest text-purple-400 mb-4"
+            >
+              Skills
+            </motion.p>
+            <motion.h2
+              variants={fadeInUp}
+              className="font-display text-4xl md:text-5xl font-bold tracking-tight text-balance"
+            >
+              The tools I reach for
+            </motion.h2>
+          </motion.div>
+
+          <motion.div
+            variants={staggerContainer}
+            {...motionProps(staggerContainer)}
+            className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5"
+          >
+            {skills.map((skill) => (
+              <motion.div
+                key={skill.category}
+                variants={scaleIn}
+                whileHover={
+                  shouldReduceMotion
+                    ? {}
+                    : { y: -4, transition: { duration: 0.2 } }
+                }
+                className={`relative rounded-2xl border ${skill.border} bg-gradient-to-b ${skill.color} p-6 shadow-[0_1px_2px_rgba(0,0,0,0.04),0_8px_24px_-8px_rgba(0,0,0,0.3)] transition-shadow duration-300`}
+              >
+                <div
+                  className={`w-10 h-10 rounded-xl bg-white/5 flex items-center justify-center ${skill.accent} mb-5`}
+                >
+                  {iconMap[skill.icon]}
+                </div>
+                <h3 className="font-semibold text-white mb-4">
+                  {skill.category}
+                </h3>
+                <ul className="space-y-2">
+                  {skill.items.map((item) => (
+                    <li
+                      key={item}
+                      className="flex items-center gap-2 text-sm text-white/50"
+                    >
+                      <span
+                        className={`w-1 h-1 rounded-full ${skill.accent.replace("text-", "bg-")}`}
+                      />
+                      {item}
+                    </li>
+                  ))}
+                </ul>
+              </motion.div>
+            ))}
+          </motion.div>
+        </div>
+      </section>
+
+      {/* ── PROJECTS ─────────────────────────────────────────────────────── */}
+      <section id="projects" className="py-28 md:py-36 px-6 md:px-10">
+        <div className="max-w-7xl mx-auto">
+          <motion.div
+            variants={staggerContainer}
+            {...motionProps(staggerContainer)}
+            className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-14"
+          >
+            <div>
+              <motion.p
+                variants={fadeInUp}
+                className="text-xs font-semibold uppercase tracking-widest text-purple-400 mb-4"
+              >
+                Projects
+              </motion.p>
+              <motion.h2
+                variants={fadeInUp}
+                className="font-display text-4xl md:text-5xl font-bold tracking-tight text-balance"
+              >
+                Selected work
+              </motion.h2>
+            </div>
+            <motion.a
+              variants={fadeInUp}
+              href="https://github.com"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-2 text-sm text-white/50 hover:text-white transition-colors duration-200 group"
+            >
+              <Github size={16} />
+              All repos on GitHub
+              <ArrowRight
+                size={14}
+                className="group-hover:translate-x-1 transition-transform duration-200"
+              />
+            </motion.a>
+          </motion.div>
+
+          {/* Featured projects — large */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+            {projects
+              .filter((p) => p.featured)
+              .map((project, i) => (
+                <motion.div
+                  key={project.title}
+                  variants={i === 0 ? slideInLeft : slideInRight}
+                  {...motionProps(i === 0 ? slideInLeft : slideInRight)}
+                  whileHover={
+                    shouldReduceMotion
+                      ? {}
+                      : { y: -4, transition: { duration: 0.2 } }
+                  }
+                  className="group relative rounded-2xl overflow-hidden border border-white/8 bg-[#111] shadow-[0_8px_32px_rgba(0,0,0,0.4)] transition-shadow duration-300 hover:shadow-[0_16px_48px_rgba(0,0,0,0.6)]"
+                >
+                  <div className="relative h-56 overflow-hidden">
+                    <img
+                      src={project.image}
+                      alt={project.title}
+                      className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-t from-[#111] via-[#111]/40 to-transparent" />
+                    <span className="absolute top-4 right-4 px-3 py-1 rounded-full bg-purple-500/20 border border-purple-500/30 text-purple-300 text-xs font-semibold">
+                      {project.stat}
+                    </span>
+                  </div>
+                  <div className="p-6">
+                    <h3 className="font-display text-xl font-bold text-white mb-2">
+                      {project.title}
+                    </h3>
+                    <p className="text-sm text-white/45 leading-relaxed mb-5">
+                      {project.description}
+                    </p>
+                    <div className="flex flex-wrap gap-2 mb-6">
+                      {project.tags.map((tag) => (
+                        <span
+                          key={tag}
+                          className="px-2.5 py-1 rounded-md bg-white/5 border border-white/8 text-xs text-white/50"
+                        >
+                          {tag}
+                        </span>
+                      ))}
+                    </div>
+                    <div className="flex items-center gap-3">
+                      <a
+                        href={project.href}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="inline-flex items-center gap-1.5 text-xs font-semibold text-white/50 hover:text-white transition-colors duration-200"
+                      >
+                        <Github size={14} /> Source
+                      </a>
+                      <a
+                        href={project.live}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="inline-flex items-center gap-1.5 text-xs font-semibold text-purple-400 hover:text-purple-300 transition-colors duration-200"
+                      >
+                        <ExternalLink size={14} /> Live demo
+                      </a>
+                    </div>
+                  </div>
+                </motion.div>
+              ))}
+          </div>
+
+          {/* Smaller projects — row */}
+          <motion.div
+            variants={staggerContainer}
+            {...motionProps(staggerContainer)}
+            className="grid grid-cols-1 sm:grid-cols-2 gap-6"
+          >
+            {projects
+              .filter((p) => !p.featured)
+              .map((project) => (
+                <motion.div
+                  key={project.title}
+                  variants={fadeInUp}
+                  whileHover={
+                    shouldReduceMotion
+                      ? {}
+                      : { y: -3, transition: { duration: 0.2 } }
+                  }
+                  className="group flex gap-5 rounded-2xl border border-white/8 bg-[#111] p-5 shadow-[0_4px_16px_rgba(0,0,0,0.3)] hover:shadow-[0_8px_32px_rgba(0,0,0,0.5)] transition-shadow duration-300"
+                >
+                  <div className="w-20 h-20 rounded-xl overflow-hidden flex-shrink-0 border border-white/8">
+                    <img
+                      src={project.image}
+                      alt={project.title}
+                      className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+                    />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-start justify-between gap-2 mb-1.5">
+                      <h3 className="font-semibold text-white text-sm">
+                        {project.title}
+                      </h3>
+                      <span className="text-[10px] px-2 py-0.5 rounded-full bg-white/5 border border-white/8 text-white/35 whitespace-nowrap">
+                        {project.stat}
+                      </span>
+                    </div>
+                    <p className="text-xs text-white/40 leading-relaxed mb-3 line-clamp-2">
+                      {project.description}
+                    </p>
+                    <div className="flex items-center gap-3">
+                      <a
+                        href={project.href}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-[11px] text-white/40 hover:text-white transition-colors duration-200 flex items-center gap-1"
+                      >
+                        <Github size={11} /> Code
+                      </a>
+                      <a
+                        href={project.live}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-[11px] text-purple-400 hover:text-purple-300 transition-colors duration-200 flex items-center gap-1"
+                      >
+                        <ExternalLink size={11} /> Demo
+                      </a>
+                    </div>
+                  </div>
+                </motion.div>
+              ))}
+          </motion.div>
+        </div>
+      </section>
+
+      {/* ── TESTIMONIALS ─────────────────────────────────────────────────── */}
+      <section className="py-28 md:py-36 px-6 md:px-10 bg-[#0d0d0d]">
+        <div className="max-w-7xl mx-auto">
+          <motion.div
+            variants={staggerContainer}
+            {...motionProps(staggerContainer)}
+            className="text-center mb-16"
+          >
+            <motion.p
+              variants={fadeInUp}
+              className="text-xs font-semibold uppercase tracking-widest text-purple-400 mb-4"
+            >
+              Testimonials
+            </motion.p>
+            <motion.h2
+              variants={fadeInUp}
+              className="font-display text-4xl md:text-5xl font-bold tracking-tight text-balance"
+            >
+              What clients say
+            </motion.h2>
+          </motion.div>
+
+          <motion.div
+            variants={staggerContainer}
+            {...motionProps(staggerContainer)}
+            className="grid grid-cols-1 md:grid-cols-3 gap-6"
+          >
+            {testimonials.map((t, i) => (
+              <motion.div
+                key={t.name}
+                variants={fadeInUp}
+                whileHover={
+                  shouldReduceMotion
+                    ? {}
+                    : { y: -4, transition: { duration: 0.2 } }
+                }
+                className={`relative rounded-2xl border border-white/8 bg-[#111] p-7 shadow-[0_4px_24px_rgba(0,0,0,0.3)] ${
+                  i === 1
+                    ? "md:mt-8 border-purple-500/20 shadow-[0_4px_24px_rgba(168,85,247,0.1)]"
+                    : ""
+                }`}
+              >
+                {/* Stars */}
+                <div className="flex gap-1 mb-5">
+                  {Array.from({ length: t.stars }).map((_, si) => (
+                    <Star
+                      key={si}
+                      size={13}
+                      className="text-amber-400 fill-amber-400"
+                    />
+                  ))}
+                </div>
+                <p className="text-sm text-white/60 leading-relaxed mb-6 italic">
+                  "{t.quote}"
+                </p>
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-full overflow-hidden border border-white/10 flex-shrink-0">
+                    <img
+                      src={t.avatar}
+                      alt={t.name}
+                      className="w-full h-full object-cover"
+                    />
+                  </div>
+                  <div>
+                    <p className="text-sm font-semibold text-white">{t.name}</p>
+                    <p className="text-xs text-white/35">{t.role}</p>
+                  </div>
+                </div>
+              </motion.div>
+            ))}
+          </motion.div>
+        </div>
+      </section>
+
+      {/* ── CONTACT ──────────────────────────────────────────────────────── */}
+      <section id="contact" className="py-28 md:py-36 px-6 md:px-10">
+        <div className="max-w-7xl mx-auto">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-start">
+            {/* Left: copy */}
+            <motion.div
+              variants={staggerContainer}
+              {...motionProps(staggerContainer)}
+            >
+              <motion.p
+                variants={fadeInUp}
+                className="text-xs font-semibold uppercase tracking-widest text-purple-400 mb-4"
+              >
+                Contact
+              </motion.p>
+              <motion.h2
+                variants={fadeInUp}
+                className="font-display text-4xl md:text-5xl font-bold tracking-tight text-balance mb-6"
+              >
+                Let's build something great together.
+              </motion.h2>
+              <motion.p
+                variants={fadeInUp}
+                className="text-white/50 leading-relaxed mb-10"
+              >
+                Whether you have a project in mind, want to collaborate, or
+                just want to say hello, my inbox is always open. I typically
+                respond within 24 hours.
+              </motion.p>
+
+              <motion.div variants={fadeInUp} className="space-y-4">
+                {[
+                  {
+                    icon: <Mail size={16} />,
+                    label: "Email",
+                    value: "alex@example.com",
+                    href: "mailto:alex@example.com",
+                  },
+                  {
+                    icon: <Github size={16} />,
+                    label: "GitHub",
+                    value: "github.com/alexmercer",
+                    href: "https://github.com",
+                  },
+                  {
+                    icon: <Linkedin size={16} />,
+                    label: "LinkedIn",
+                    value: "linkedin.com/in/alexmercer",
+                    href: "https://linkedin.com",
+                  },
+                ].map((contact) => (
+                  <a
+                    key={contact.label}
+                    href={contact.href}
+                    target={
+                      contact.href.startsWith("mailto") ? undefined : "_blank"
+                    }
+                    rel="noopener noreferrer"
+                    className="flex items-center gap-4 p-4 rounded-xl border border-white/8 bg-white/3 hover:bg-white/6 hover:border-white/15 transition-all duration-300 group"
+                  >
+                    <div className="w-9 h-9 rounded-lg bg-purple-500/15 border border-purple-500/25 flex items-center justify-center text-purple-400">
+                      {contact.icon}
+                    </div>
+                    <div>
+                      <p className="text-xs text-white/30 mb-0.5">
+                        {contact.label}
+                      </p>
+                      <p className="text-sm text-white/70 group-hover:text-white transition-colors duration-200">
+                        {contact.value}
+                      </p>
+                    </div>
+                    <ArrowRight
+                      size={14}
+                      className="ml-auto text-white/20 group-hover:text-purple-400 group-hover:translate-x-1 transition-all duration-200"
+                    />
+                  </a>
+                ))}
+              </motion.div>
+            </motion.div>
+
+            {/* Right: form */}
+            <motion.div
+              variants={slideInRight}
+              {...motionProps(slideInRight)}
+              className="rounded-2xl border border-white/8 bg-[#111] p-8 shadow-[0_8px_40px_rgba(0,0,0,0.4)]"
+            >
+              {formSent ? (
+                <motion.div
+                  variants={scaleIn}
+                  initial="hidden"
+                  animate="visible"
+                  className="flex flex-col items-center justify-center py-16 text-center"
+                >
+                  <div className="w-16 h-16 rounded-full bg-purple-500/15 border border-purple-500/30 flex items-center justify-center mb-5">
+                    <CheckCircle size={28} className="text-purple-400" />
+                  </div>
+                  <h3 className="font-display text-xl font-bold text-white mb-2">
+                    Message sent!
+                  </h3>
+                  <p className="text-sm text-white/45">
+                    Thanks for reaching out. I'll get back to you within 24
+                    hours.
+                  </p>
+                </motion.div>
+              ) : (
+                <form onSubmit={handleSubmit} className="space-y-5">
+                  <div>
+                    <label
+                      htmlFor="name"
+                      className="block text-xs font-semibold text-white/40 uppercase tracking-wider mb-2"
+                    >
+                      Name
+                    </label>
+                    <div className="relative">
+                      <User
+                        size={14}
+                        className="absolute left-3.5 top-1/2 -translate-y-1/2 text-white/25"
+                      />
+                      <input
+                        id="name"
+                        name="name"
+                        type="text"
+                        required
+                        value={formState.name}
+                        onChange={handleChange}
+                        placeholder="Your name"
+                        className="w-full bg-white/5 border border-white/10 rounded-xl pl-9 pr-4 py-3 text-sm text-white placeholder:text-white/20 focus:outline-none focus:border-purple-500/50 focus:bg-white/8 transition-all duration-200"
+                      />
+                    </div>
+                  </div>
+
+                  <div>
+                    <label
+                      htmlFor="email"
+                      className="block text-xs font-semibold text-white/40 uppercase tracking-wider mb-2"
+                    >
+                      Email
+                    </label>
+                    <div className="relative">
+                      <Mail
+                        size={14}
+                        className="absolute left-3.5 top-1/2 -translate-y-1/2 text-white/25"
+                      />
+                      <input
+                        id="email"
+                        name="email"
+                        type="email"
+                        required
+                        value={formState.email}
+                        onChange={handleChange}
+                        placeholder="you@example.com"
+                        className="w-full bg-white/5 border border-white/10 rounded-xl pl-9 pr-4 py-3 text-sm text-white placeholder:text-white/20 focus:outline-none focus:border-purple-500/50 focus:bg-white/8 transition-all duration-200"
+                      />
+                    </div>
+                  </div>
+
+                  <div>
+                    <label
+                      htmlFor="message"
+                      className="block text-xs font-semibold text-white/40 uppercase tracking-wider mb-2"
+                    >
+                      Message
+                    </label>
+                    <div className="relative">
+                      <FileText
+                        size={14}
+                        className="absolute left-3.5 top-3.5 text-white/25"
+                      />
+                      <textarea
+                        id="message"
+                        name="message"
+                        required
+                        rows={5}
+                        value={formState.message}
+                        onChange={handleChange}
+                        placeholder="Tell me about your project..."
+                        className="w-full bg-white/5 border border-white/10 rounded-xl pl-9 pr-4 py-3 text-sm text-white placeholder:text-white/20 focus:outline-none focus:border-purple-500/50 focus:bg-white/8 transition-all duration-200 resize-none"
+                      />
+                    </div>
+                  </div>
+
+                  <motion.button
+                    whileHover={
+                      shouldReduceMotion ? {} : { scale: 1.02 }
+                    }
+                    whileTap={shouldReduceMotion ? {} : { scale: 0.97 }}
+                    type="submit"
+                    className="w-full inline-flex items-center justify-center gap-2 px-6 py-3.5 rounded-xl bg-purple-500 hover:bg-purple-400 text-white font-semibold text-sm transition-all duration-300 shadow-[0_0_24px_rgba(168,85,247,0.3)] hover:shadow-[0_0_36px_rgba(168,85,247,0.5)]"
+                  >
+                    <Send size={15} />
+                    Send Message
+                  </motion.button>
+                </form>
+              )}
+            </motion.div>
+          </div>
+        </div>
+      </section>
+    </main>
+  );
 }
